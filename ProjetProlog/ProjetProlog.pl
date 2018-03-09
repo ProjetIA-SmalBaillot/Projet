@@ -56,7 +56,7 @@
 % coordonnees(6,5).
 % coordonnees(6,6).
 
-findujeu(3,6).
+findujeu :- voiture(joueur,_,_,(_,_,3,6)).
 
 adresse(X,Y,Z,U) :- coordonnees(X,Y) , coordonnees(Z,U).
 adresse(X,Y,Z,U,V,W) :- coordonnees(X,Y) , coordonnees(Z,U), coordonnees(V,W).
@@ -65,6 +65,10 @@ adresse(X,Y,Z,U,V,W) :- coordonnees(X,Y) , coordonnees(Z,U), coordonnees(V,W).
 %voiture (I,T,O,A) :- identifiant(I),taille(T),orientation(O), adresse(A).
 
 %les voitures verticales sont définies de haut en bas et les voitures horizontales de gauche à droite
+
+%définition dynamiques des voitures car on va en enlever et en créer
+
+:- dynamic(voiture/4).
 
 %niveau 1 
 voiture(1,2,horizontal,(1,1,1,2)).
@@ -75,6 +79,10 @@ voiture(5,3,vertical,(2,4,3,4,4,4)).
 voiture(6,2,horizontal,(5,5,5,6)).
 voiture(7,3,horizontal,(6,3,6,4,6,5)).
 voiture(joueur,2,horizontal,(3,2,3,3)).
+
+%niveau 2
+
+
 
 %case prise par une voiture de taille 2 ou 3
 caseprise(X,Y) :- voiture(_,_,_,(X,Y,_,_)) ; voiture(_,_,_,(_,_,X,Y)).
@@ -100,26 +108,35 @@ bloquevoitureB(V) :- voiture(V,3,vertical,(X1,Y1,X2,Y2,X3,Y3)) , X is X3+1 , cas
 
 % VOITURE IMMOBILE
 % Si elle est bloquée entre deux voitures ou si elle est bloquée entre une voiture et un mur : tous les cas possibles :
-voitureimmobile(V) :- voiture(V,2,horizontal,(_,_,_,_)) , bloquevoitureG(V), bloquemurD(V). 
-voitureimmobile(V) :- voiture(V,2,horizontal,(_,_,_,_)) , bloquevoitureD(V) , bloquemurG(V).
-voitureimmobile(V) :- voiture(V,2,horizontal,(_,_,_,_)) , bloquevoitureD(V) , bloquevoitureG(V).                
-voitureimmobile(V) :- voiture(V,3,horizontal,(_,_,_,_,_,_)) , bloquevoitureG(V) , bloquemurD(V).
-voitureimmobile(V) :- voiture(V,3,horizontal,(_,_,_,_,_,_)) , bloquevoitureD(V) , bloquemurG(V).
-voitureimmobile(V) :- voiture(V,3,horizontal,(_,_,_,_,_,_)) , bloquevoitureD(V) , bloquevoitureG(V).
-voitureimmobile(V) :- voiture(V,2,vertical,(_,_,_,_)) , bloquevoitureH(V), bloquemurB(V).
-voitureimmobile(V) :- voiture(V,2,vertical,(_,_,_,_)) , bloquevoitureB(V) , bloquemurH(V).
-voitureimmobile(V) :- voiture(V,2,vertical,(_,_,_,_)) , bloquevoitureB(V) , bloquevoitureH(V).                
-voitureimmobile(V) :- voiture(V,3,vertical,(_,_,_,_,_,_)) , bloquevoitureH(V), bloquemurB(V).
-voitureimmobile(V) :- voiture(V,3,vertical,(_,_,_,_,_,_)) , bloquevoitureB(V) , bloquemurH(V).
-voitureimmobile(V) :- voiture(V,3,vertical,(_,_,_,_,_,_)) , bloquevoitureB(V) , bloquevoitureH(V).
+% voitureimmobile(V) :- voiture(V,2,horizontal,(_,_,_,_)) , bloquevoitureG(V), bloquemurD(V). 
+% voitureimmobile(V) :- voiture(V,2,horizontal,(_,_,_,_)) , bloquevoitureD(V) , bloquemurG(V).
+% voitureimmobile(V) :- voiture(V,2,horizontal,(_,_,_,_)) , bloquevoitureD(V) , bloquevoitureG(V).                
+% voitureimmobile(V) :- voiture(V,3,horizontal,(_,_,_,_,_,_)) , bloquevoitureG(V) , bloquemurD(V).
+% voitureimmobile(V) :- voiture(V,3,horizontal,(_,_,_,_,_,_)) , bloquevoitureD(V) , bloquemurG(V).
+% voitureimmobile(V) :- voiture(V,3,horizontal,(_,_,_,_,_,_)) , bloquevoitureD(V) , bloquevoitureG(V).
+% voitureimmobile(V) :- voiture(V,2,vertical,(_,_,_,_)) , bloquevoitureH(V), bloquemurB(V).
+% voitureimmobile(V) :- voiture(V,2,vertical,(_,_,_,_)) , bloquevoitureB(V) , bloquemurH(V).
+% voitureimmobile(V) :- voiture(V,2,vertical,(_,_,_,_)) , bloquevoitureB(V) , bloquevoitureH(V).                
+% voitureimmobile(V) :- voiture(V,3,vertical,(_,_,_,_,_,_)) , bloquevoitureH(V), bloquemurB(V).
+% voitureimmobile(V) :- voiture(V,3,vertical,(_,_,_,_,_,_)) , bloquevoitureB(V) , bloquemurH(V).
+% voitureimmobile(V) :- voiture(V,3,vertical,(_,_,_,_,_,_)) , bloquevoitureB(V) , bloquevoitureH(V).
                 
 % MOUVEMENT D'UNE VOITURE
 
-bougerD(V) :- voiture(V,2,horizontal,(_,Y1,_,Y2)) , \+voitureimmobile(V) , Yn is Y1+1 , Yn2 is Y2+1. %trouver un moyen d'affeter Yn et Yn2 à la voiture
-bougerD(V) :- voiture(V,3,horizontal,(_,Y1,_,Y2,_,Y3)) , \+voitureimmobile(V) , Yn is Y1+1 , Yn2 is Y2+1 Yn3 is Y3+1.
+bougerD(V) :- voiture(V,2,horizontal,(X1,Y1,X2,Y2)) , \+bloquevoitureD(V) , \+bloquemurD(V) , Yn is Y1+1 , Yn2 is Y2+1 , retract(voiture(V,2,horizontal,(X1,Y1,X2,Y2))), assert(voiture(V,2,horizontal,(X1,Yn,X2,Yn2))).
+bougerD(V) :- voiture(V,3,horizontal,(X1,Y1,X2,Y2,X3,Y3)) , \+bloquevoitureD(V) , \+bloquemurD(V) , Yn is Y1+1 , Yn2 is Y2+1, Yn3 is Y3+1 , retract(voiture(V,3,horizontal,(X1,Y1,X2,Y2,X3,Y3))), assert(voiture(V,3,horizontal,(X1,Yn,X2,Yn2,X3,Yn3))).
 
-bougerD(V) :- voiture(V,2,horizontal,(_,Y1,_,Y2)) , \+voitureimmobile(V) , Yn is Y1-1 , Yn2 is Y2-1. %trouver un moyen d'affeter Yn et Yn2 à la voiture
-bougerG(V) :- voiture(V,3,horizontal,(_,Y1,_,Y2,_,Y3)) , \+voitureimmobile(V) , Yn is Y1-1 , Yn2 is Y2-1 Yn3 is Y3-1.
+bougerG(V) :- voiture(V,2,horizontal,(X1,Y1,X2,Y2)) , \+bloquevoitureG(V) , \+bloquemurG(V) , Yn is Y1-1 , Yn2 is Y2-1 , retract(voiture(V,2,horizontal,(X1,Y1,X2,Y2))), assert(voiture(V,2,horizontal,(X1,Yn,X2,Yn2))).
+bougerG(V) :- voiture(V,3,horizontal,(X1,Y1,X2,Y2,X3,Y3)) , \+bloquevoitureG(V) , \+bloquemurG(V) , Yn is Y1-1 , Yn2 is Y2-1, Yn3 is Y3-1 , retract(voiture(V,3,horizontal,(X1,Y1,X2,Y2,X3,Y3))), assert(voiture(V,3,horizontal,(X1,Yn,X2,Yn2,X3,Yn3))).
+
+bougerH(V) :- voiture(V,2,vertical,(X1,Y1,X2,Y2)) , \+bloquevoitureH(V) , \+bloquemurH(V) , Xn is X1-1 , Xn2 is X2-1 , retract(voiture(V,2,vertical,(X1,Y1,X2,Y2))), assert(voiture(V,2,vertical,(Xn,Y1,Xn2,Y2))).
+bougerH(V) :- voiture(V,3,vertical,(X1,Y1,X2,Y2,X3,Y3)) , \+bloquevoitureH(V) , \+bloquemurH(V), Xn is X1-1 , Xn2 is X2-1, Xn3 is X3-1 , retract(voiture(V,3,vertical,(X1,Y1,X2,Y2,X3,Y3))), assert(voiture(V,3,vertical,(Xn,Y1,Xn2,Y2,Xn3,Y3))).
+
+bougerB(V) :- voiture(V,2,vertical,(X1,Y1,X2,Y2)) , \+bloquevoitureB(V) , \+bloquemurB(V) , Xn is X1+1 , Xn2 is X2+1 , retract(voiture(V,2,vertical,(X1,Y1,X2,Y2))), assert(voiture(V,2,vertical,(Xn,Y1,Xn2,Y2))).
+bougerB(V) :- voiture(V,3,vertical,(X1,Y1,X2,Y2,X3,Y3)) , \+bloquevoitureB(V) , \+bloquemurB(V) , Xn is X1+1 , Xn2 is X2+1, Xn3 is X3+1 , retract(voiture(V,3,vertical,(X1,Y1,X2,Y2,X3,Y3))), assert(voiture(V,3,vertical,(Xn,Y1,Xn2,Y2,Xn3,Y3))).
 
 
-bougerH(V) :- voiture(V,2,vertical,(_,Y1,_,_,_,Y3)) , \+voitureimmobile(V) , Yn is Y1+1 , Yn3 is Y3+1.        
+
+%AFFICHAGE GRILLE
+
+afficher_liste([X|L]) :- writeln(X), afficher_liste(L).
