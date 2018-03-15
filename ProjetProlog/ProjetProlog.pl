@@ -1,6 +1,6 @@
 %-------------------------------------
 %             RUSH HOUR
-%------------------------------------
+%-------------------------------------
 
 % RESTE A FAIRE
 % Si commande fausse entrée, avoir un message pour l'utilisateur qui lui donne les entrées valides
@@ -16,11 +16,11 @@
 % REGLES DU jEU ET OPERATEURS PERMANENTS
 %---------------------------------------
 
-findujeu :- voiture(j,_,_,(_,_,3,6)),                   %Lorsque le joueur a sa dernière composante sur la case 3,6 il a gagné
+findujeu :- voiture(j,_,_,(_,_,3,6)),  %Lorsque le joueur a sa dernière composante sur la case 3,6 il a gagné
     write("Felicitations ! Vous avez gagne !!!"),
-    menu().
+    demarrer().
 
-:- dynamic(voiture/4).                         %définition dynamiques des voitures car on va en enlever et en créer
+:- dynamic(voiture/4).        %définition dynamiques des voitures car on va en enlever et en créer
 :- dynamic(compteurmvmt/1).
 
 
@@ -28,9 +28,9 @@ findujeu :- voiture(j,_,_,(_,_,3,6)),                   %Lorsque le joueur a sa 
 %GESTION DU JEU
 %--------------
 
-menu():-
+demarrer():-
     retractall(voiture(_,_,_,_)),
-    write("REGLES A AJOUTER ICI !!!!! Bienvenue sur Rush Hour ! \n Vous devez sortir votre voiture j des embouteillage en deplacant les autres voitures ! \n La case sur laquelle vous devez arriver est indiquée en rouge \n Choisissez le niveau en entrant niveau(X) ou X le numero du niveau").
+    write("Bienvenue sur Rush Hour ! \n Votre voiture, marquee par la lettre j, est coincee dans les embouteillages. \nLe but est de l'en faire sortir en rejoignant la case dont le contenu est écrit en rouge. \n\nPour cela, vous devez déplacez les voitures qui vous bloquent. \nLeur déplacement est permis par une instruction de type 'bouger(I,D).' Avec I l'identifiant de la voiture que vous souhaitez déplacer (présent sur la grille) et avec D la direction de déplacement souhaitée parmis : haut, bas, gauche ou droite. \n\nPour commencer, choisissez le niveau de jeu en écrivant 'niveau(X).' avec X le niveau choisi entre 1,2, 3 ou 4.").
 
 tour() :-   
     \+findujeu,
@@ -54,7 +54,7 @@ niveau(Commande) :- Commande == 0,
     assert(voiture(1,2,horizontal,(1,1,1,2))),
     assert(voiture(j,2,horizontal,(3,2,3,3))),
     affichageGrille(1),
-    write "Vous voici dans de sacrés embouteillages !"
+    write ("Vous voici dans de sacrés embouteillages !").
 
 
 niveau(Commande) :- Commande == 1,
