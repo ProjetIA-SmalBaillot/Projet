@@ -2,27 +2,21 @@
 %             RUSH HOUR
 %-------------------------------------
 
-% RESTE A FAIRE
-% Si commande fausse entrée, avoir un message pour l'utilisateur qui lui donne les entrées valides
-% Les instructions en début de partie 
-
-% OU 
-% Faire des boucles read et write pour le jeu afin d'avoir les commandes pré-saisies.
-
-
-% NE PAS OUBLIER DE PARLER DE L'ARGUMENT TAILLE DE LA VOITURE QUE L'ON A PAS PU SUPPRIMER
+% Projet d'intelligence artificielle en langage Prolog 
+% Réalisé par Lauren Baillot et Claire Smal
+% Etudiantes de deuxième année, promotion 2019 de l'ENSC
 
 %---------------------------------------
-% REGLES DU jEU ET OPERATEURS PERMANENTS
+% REGLES DU JEU ET OPERATEURS PERMANENTS
 %---------------------------------------
 
 findujeu :- voiture(j,_,_,(_,_,3,6)),  %Lorsque le joueur a sa dernière composante sur la case 3,6 il a gagné
-    write("Felicitations ! Vous avez gagne !!!"),
+    write('\e[2J'),
+    write("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\nFelicitations ! Vous avez gagne !!!\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n"),
     demarrer().
 
 :- dynamic(voiture/4).        %définition dynamiques des voitures car on va en enlever et en créer
 :- dynamic(compteurmvmt/1).
-
 
 %---------------
 %GESTION DU JEU
@@ -30,32 +24,52 @@ findujeu :- voiture(j,_,_,(_,_,3,6)),  %Lorsque le joueur a sa dernière composa
 
 demarrer():-
     retractall(voiture(_,_,_,_)),
-    write("Bienvenue sur Rush Hour ! \n Votre voiture, marquee par la lettre j, est coincee dans les embouteillages. \nLe but est de l'en faire sortir en rejoignant la case dont le contenu est écrit en rouge. \n\nPour cela, vous devez déplacez les voitures qui vous bloquent. \nLeur déplacement est permis par une instruction de type 'bouger(I,D).' Avec I l'identifiant de la voiture que vous souhaitez déplacer (présent sur la grille) et avec D la direction de déplacement souhaitée parmis : haut, bas, gauche ou droite. \n\nPour commencer, choisissez le niveau de jeu en écrivant 'niveau(X).' avec X le niveau choisi entre 1,2, 3 ou 4.").
+    write("Bienvenue au demarrage du jeu Rush Hour ! \n\nREGLES DU JEU \nVotre voiture, marquee par la lettre j, est coincee dans les embouteillages. \nLe but est de l'en faire sortir en rejoignant la case dont le contenu est ecrit en rouge. \n\nPour cela, vous devez deplacer les voitures qui vous bloquent. \nLeur deplacement est permis en suivant les instructions a l'ecran.\nAjoutez un point '.' et appuyez sur entree pour valider chaque saisie \n\nIl vous est impossible de vous deplacer en dehors des limites de la grille, de taille 6*6. \nVous ne pouvez pas non plus vous deplacer sur une case deja occupee par une voiture. \nLes voitures de direction verticale ne peuvent se deplacer que vers le haut ou le bas. \nDe meme les voitures de direction horizontales ne peuvent se deplacer que vers la droite ou la gauche. \n\nPour commencer, choisissez le niveau de jeu en ecrivant 'niveau(X).' avec X le niveau choisi entre 1,2, 3 ou 4.").
+
+compteurmvmt(-1).
+
+% identifiant(I):-
+%     voiture(I,_,_,_).
+
+% direction(D):-
+%     D="h";
+%     D="b";
+%     D="d";
+%     D="g".
+
+tour() :-   
+        findujeu.
 
 tour() :-   
     \+findujeu,
     retract(compteurmvmt(X)),
     Y is X+1,
     assert(compteurmvmt(Y)),
-    write("Score "+ Y),
-    nl,
-    affichageGrille(1).
+    write('\e[2J'),
+    write("\n Votre score : " +Y),
+    write("\n\nGrille de jeu\n"),
+    affichageGrille(1),
+    write("Saisissez la direction du deplacement souhaite (h,b,g,d)"),
+    read(Direction),
+    %direction(Direction),
+    write("Saisissez l'identifiant de la voiture a bouger (numeros sur la grille)"),
+    read(Identifiant),
+    %identifiant(Identifiant),    
+    bouger(Identifiant,Direction),
+    tour().
 
 %----------------------
-% DEFINITION DES OBjETS
+% DEFINITION DES OBJETS
 %----------------------
 
-%les voitures verticales sont définies de haut en bas et les voitures horizontales de gauche à droite
+%les voitures verticales sont définies de h en b et les voitures horizontales de g à d
 %voiture (I,T,O,A) :- identifiant(I),taille(T),orientation(O), adresse(A).
-
-compteurmvmt(0).
 
 niveau(Commande) :- Commande == 0,
     assert(voiture(1,2,horizontal,(1,1,1,2))),
     assert(voiture(j,2,horizontal,(3,2,3,3))),
     affichageGrille(1),
-    write ("Vous voici dans de sacrés embouteillages !").
-
+    tour().
 
 niveau(Commande) :- Commande == 1,
     assert(voiture(1,2,horizontal,(1,1,1,2))),
@@ -66,7 +80,7 @@ niveau(Commande) :- Commande == 1,
     assert(voiture(6,2,horizontal,(5,5,5,6))),
     assert(voiture(7,3,horizontal,(6,3,6,4,6,5))),
     assert(voiture(j,2,horizontal,(3,2,3,3))),
-    affichageGrille(1).
+    tour().
 
 niveau(Commande) :- Commande == 2,
     assert(voiture(1,2,vertical,(1,1,2,1))),
@@ -80,7 +94,7 @@ niveau(Commande) :- Commande == 2,
     assert(voiture(9,2,vertical,(2,4,3,4))),
     assert(voiture(a,3,horizontal,(1,4,1,5,1,6))),
     assert(voiture(j,2,horizontal,(3,1,3,2))),
-    affichageGrille(1).
+    tour().
 
 niveau(Commande) :- Commande == 3,
     assert(voiture(1,2,horizontal,(4,2,4,3))),
@@ -89,7 +103,7 @@ niveau(Commande) :- Commande == 3,
     assert(voiture(4,3,vertical,(3,4,4,4,5,4))),
     assert(voiture(5,3,vertical,(4,6,5,6,6,6))),
     assert(voiture(j,2,horizontal,(3,2,3,3))),
-    affichageGrille(1).
+    tour().
 
 niveau(Commande) :- Commande == 4,
     assert(voiture(1,3,vertical,(1,1,2,1,3,1))),
@@ -99,7 +113,7 @@ niveau(Commande) :- Commande == 4,
     assert(voiture(5,2,vertical,(5,6,6,6))),
     assert(voiture(6,3,horizontal,(6,3,6,4,6,5))),
     assert(voiture(j,2,horizontal,(3,2,3,3))),
-    affichageGrille(1).
+    tour().
 
 %--------------------------
 %CASE PRISE PAR UNE VOITURE
@@ -173,17 +187,16 @@ bloquevoitureB(V) :-
 %------------------------
 
 bouger(V,Dir) :- 
-    Dir == droite , voiture(V,2,horizontal,(X1,Y1,X2,Y2)) ,
+    Dir == d , voiture(V,2,horizontal,(X1,Y1,X2,Y2)) ,
     \+bloquevoitureD(V) , 
     \+bloquemurD(V) , 
     Yn is Y1+1 , 
     Yn2 is Y2+1 , 
     retract(voiture(V,2,horizontal,(X1,Y1,X2,Y2))), 
-    assert(voiture(V,2,horizontal,(X1,Yn,X2,Yn2))),
-    tour().
+    assert(voiture(V,2,horizontal,(X1,Yn,X2,Yn2))).
 
 bouger(V,Dir) :- 
-    Dir == droite , 
+    Dir == d , 
     voiture(V,3,horizontal,(X1,Y1,X2,Y2,X3,Y3)) ,
     \+bloquevoitureD(V) , 
     \+bloquemurD(V) , 
@@ -191,22 +204,20 @@ bouger(V,Dir) :-
     Yn2 is Y2+1, 
     Yn3 is Y3+1 , 
     retract(voiture(V,3,horizontal,(X1,Y1,X2,Y2,X3,Y3))), 
-    assert(voiture(V,3,horizontal,(X1,Yn,X2,Yn2,X3,Yn3))),
-    tour().
+    assert(voiture(V,3,horizontal,(X1,Yn,X2,Yn2,X3,Yn3))).
 
 bouger(V,Dir) :- 
-    Dir == gauche , 
+    Dir == g , 
     voiture(V,2,horizontal,(X1,Y1,X2,Y2)) , 
     \+bloquevoitureG(V) , 
     \+bloquemurG(V) , 
     Yn is Y1-1 , 
     Yn2 is Y2-1 , 
     retract(voiture(V,2,horizontal,(X1,Y1,X2,Y2))), 
-    assert(voiture(V,2,horizontal,(X1,Yn,X2,Yn2))),
-    tour().
+    assert(voiture(V,2,horizontal,(X1,Yn,X2,Yn2))).
 
 bouger(V,Dir) :- 
-    Dir == gauche , 
+    Dir == g , 
     voiture(V,3,horizontal,(X1,Y1,X2,Y2,X3,Y3)) , 
     \+bloquevoitureG(V) , 
     \+bloquemurG(V) , 
@@ -214,22 +225,20 @@ bouger(V,Dir) :-
     Yn2 is Y2-1, 
     Yn3 is Y3-1 , 
     retract(voiture(V,3,horizontal,(X1,Y1,X2,Y2,X3,Y3))), 
-    assert(voiture(V,3,horizontal,(X1,Yn,X2,Yn2,X3,Yn3))),
-    tour().
+    assert(voiture(V,3,horizontal,(X1,Yn,X2,Yn2,X3,Yn3))).
 
 bouger(V,Dir) :- 
-    Dir == haut , 
+    Dir == h , 
     voiture(V,2,vertical,(X1,Y1,X2,Y2)) , 
     \+bloquevoitureH(V) , 
     \+bloquemurH(V) , 
     Xn is X1-1 , 
     Xn2 is X2-1 , 
     retract(voiture(V,2,vertical,(X1,Y1,X2,Y2))), 
-    assert(voiture(V,2,vertical,(Xn,Y1,Xn2,Y2))),
-    tour().
+    assert(voiture(V,2,vertical,(Xn,Y1,Xn2,Y2))).
 
 bouger(V,Dir) :- 
-    Dir == haut , 
+    Dir == h , 
     voiture(V,3,vertical,(X1,Y1,X2,Y2,X3,Y3)) , 
     \+bloquevoitureH(V) , 
     \+bloquemurH(V), 
@@ -237,22 +246,20 @@ bouger(V,Dir) :-
     Xn2 is X2-1, 
     Xn3 is X3-1 , 
     retract(voiture(V,3,vertical,(X1,Y1,X2,Y2,X3,Y3))), 
-    assert(voiture(V,3,vertical,(Xn,Y1,Xn2,Y2,Xn3,Y3))),
-    tour().
+    assert(voiture(V,3,vertical,(Xn,Y1,Xn2,Y2,Xn3,Y3))).
 
 bouger(V,Dir) :- 
-    Dir == bas , 
+    Dir == b , 
     voiture(V,2,vertical,(X1,Y1,X2,Y2)) , 
     \+bloquevoitureB(V) , 
     \+bloquemurB(V) , 
     Xn is X1+1 , 
     Xn2 is X2+1 , 
     retract(voiture(V,2,vertical,(X1,Y1,X2,Y2))), 
-    assert(voiture(V,2,vertical,(Xn,Y1,Xn2,Y2))),
-    tour().
+    assert(voiture(V,2,vertical,(Xn,Y1,Xn2,Y2))).
 
 bouger(V,Dir) :- 
-    Dir == bas , 
+    Dir == b , 
     voiture(V,3,vertical,(X1,Y1,X2,Y2,X3,Y3)) , 
     \+bloquevoitureB(V) , 
     \+bloquemurB(V) , 
@@ -260,9 +267,7 @@ bouger(V,Dir) :-
     Xn2 is X2+1, 
     Xn3 is X3+1 , 
     retract(voiture(V,3,vertical,(X1,Y1,X2,Y2,X3,Y3))), 
-    assert(voiture(V,3,vertical,(Xn,Y1,Xn2,Y2,Xn3,Y3))),
-    tour().
-
+    assert(voiture(V,3,vertical,(Xn,Y1,Xn2,Y2,Xn3,Y3))).
 
 %---------
 %AFFICHAGE
@@ -287,7 +292,6 @@ affichageLigne(Ligneactu,Colonneactu) :-
     affichageCellule(Ligneactu,Colonneactu),
     Colonnesuiv is Colonneactu + 1,
     affichageLigne(Ligneactu,Colonnesuiv).
-
 
 affichageCellule(3,6) :- 
     caseprise(3,6,I),
