@@ -15,7 +15,11 @@ findujeu :- voiture(j,_,_,(_,_,3,6)),  %Lorsque le joueur a sa dernière composa
     write("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\nFelicitations ! Vous avez gagne !!!\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n"),
     demarrer().
 
-:- dynamic(voiture/4).        %définition dynamiques des voitures car on va en enlever et en créer
+%arretdejeu(X) :- 
+%    X==stop,
+%    demarrer().
+
+:- dynamic(voiture/4).        %définition dynamique des voitures car on va en enlever et en créer
 :- dynamic(compteurmvmt/1).
 
 %---------------
@@ -29,10 +33,11 @@ demarrer():-
 
 compteurmvmt(-1).
 
-tour() :-   
-        findujeu.
-
-tour() :-
+tour() :- tour(a).
+tour(_) :-   
+        findujeu,!.
+tour(stop) :- demarrer(),!.
+tour(_) :-
     retract(compteurmvmt(X)),
     Y is X+1,
     assert(compteurmvmt(Y)),
@@ -44,23 +49,22 @@ tour() :-
         (repeat,
             write("\nSaisissez l'identifiant de la voiture a bouger (numeros sur la grille)"),
             read(Identifiant),
-            ((Identifiant==j; Identifiant==1; Identifiant==2 ; Identifiant==3 ; Identifiant==4 ; Identifiant==5 ; Identifiant==6 ; Identifiant==7 ; Identifiant==8 ; Identifiant==9 ; Identifiant==a)->!
-            ; Identifiant==stop -> demarrer() %TROUVER UN MOYEN DE SORTIR DU TOUR !!!!
+            ((Identifiant==stop; Identifiant==j; Identifiant==1; Identifiant==2 ; Identifiant==3 ; Identifiant==4 ; Identifiant==5 ; Identifiant==6 ; Identifiant==7 ; Identifiant==8 ; Identifiant==9 ; Identifiant==a)->!
             ; write("\nL'identifiant entre n'est pas valide, recommencez "), 
             fail
-            ),        
-        repeat,
+            ),  
+        (Identifiant \= stop ->   
+        (repeat,
             write("Saisissez la direction du deplacement souhaite (haut,bas,gauche,droite)"),
             read(Direction),
             ((Direction==droite ; Direction==gauche ; Direction==haut ; Direction==bas)->!
-            ; Direction==stop -> demarrer() 
             ; write("\nLa direction de deplacement saisie n'est pas valide, recommencez "), 
             fail
             ),
         bouger(Identifiant,Direction)->!
-        ; write("\nLe deplacement entre n'est pas autorise, recommencez"), fail
-        ),
-    tour().
+; write("\nLe deplacement entre n'est pas autorise, recommencez"));(true)
+)),
+    tour(Identifiant).
 
 %----------------------
 % DEFINITION DES OBJETS
