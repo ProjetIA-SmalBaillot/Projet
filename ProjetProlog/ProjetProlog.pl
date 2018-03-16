@@ -23,25 +23,16 @@ findujeu :- voiture(j,_,_,(_,_,3,6)),  %Lorsque le joueur a sa dernière composa
 %--------------
 
 demarrer():-
+    write('\e[2J'),
     retractall(voiture(_,_,_,_)),
     write("Bienvenue au demarrage du jeu Rush Hour ! \n\nREGLES DU JEU \nVotre voiture, marquee par la lettre j, est coincee dans les embouteillages. \nLe but est de l'en faire sortir en rejoignant la case dont le contenu est ecrit en rouge. \n\nPour cela, vous devez deplacer les voitures qui vous bloquent. \nLeur deplacement est permis en suivant les instructions a l'ecran.\nAjoutez un point '.' et appuyez sur entree pour valider chaque saisie \n\nIl vous est impossible de vous deplacer en dehors des limites de la grille, de taille 6*6. \nVous ne pouvez pas non plus vous deplacer sur une case deja occupee par une voiture. \nLes voitures de direction verticale ne peuvent se deplacer que vers le haut ou le bas. \nDe meme les voitures de direction horizontales ne peuvent se deplacer que vers la droite ou la gauche. \n\nPour commencer, choisissez le niveau de jeu en ecrivant 'niveau(X).' avec X le niveau choisi entre 1,2, 3 ou 4.").
 
 compteurmvmt(-1).
 
-% identifiant(I):-
-%     voiture(I,_,_,_).
-
-% direction(D):-
-%     D="h";
-%     D="b";
-%     D="d";
-%     D="g".
-
 tour() :-   
         findujeu.
 
-tour() :-   
-    \+findujeu,
+tour() :-
     retract(compteurmvmt(X)),
     Y is X+1,
     assert(compteurmvmt(Y)),
@@ -49,13 +40,26 @@ tour() :-
     write("\n Votre score : " +Y),
     write("\n\nGrille de jeu\n"),
     affichageGrille(1),
-    write("Saisissez la direction du deplacement souhaite (h,b,g,d)"),
-    read(Direction),
-    %direction(Direction),
-    write("Saisissez l'identifiant de la voiture a bouger (numeros sur la grille)"),
-    read(Identifiant),
-    %identifiant(Identifiant),    
-    bouger(Identifiant,Direction),
+    repeat,
+        (repeat,
+            write("\nSaisissez l'identifiant de la voiture a bouger (numeros sur la grille)"),
+            read(Identifiant),
+            ((Identifiant==j; Identifiant==1; Identifiant==2 ; Identifiant==3 ; Identifiant==4 ; Identifiant==5 ; Identifiant==6 ; Identifiant==7 ; Identifiant==8 ; Identifiant==9 ; Identifiant==a)->!
+            ; Identifiant==stop -> demarrer() %TROUVER UN MOYEN DE SORTIR DU TOUR !!!!
+            ; write("\nL'identifiant entre n'est pas valide, recommencez "), 
+            fail
+            ),        
+        repeat,
+            write("Saisissez la direction du deplacement souhaite (haut,bas,gauche,droite)"),
+            read(Direction),
+            ((Direction==droite ; Direction==gauche ; Direction==haut ; Direction==bas)->!
+            ; Direction==stop -> demarrer() 
+            ; write("\nLa direction de deplacement saisie n'est pas valide, recommencez "), 
+            fail
+            ),
+        bouger(Identifiant,Direction)->!
+        ; write("\nLe deplacement entre n'est pas autorise, recommencez"), fail
+        ),
     tour().
 
 %----------------------
@@ -187,7 +191,8 @@ bloquevoitureB(V) :-
 %------------------------
 
 bouger(V,Dir) :- 
-    Dir == d , voiture(V,2,horizontal,(X1,Y1,X2,Y2)) ,
+    Dir==droite,
+    voiture(V,2,horizontal,(X1,Y1,X2,Y2)) ,
     \+bloquevoitureD(V) , 
     \+bloquemurD(V) , 
     Yn is Y1+1 , 
@@ -196,8 +201,8 @@ bouger(V,Dir) :-
     assert(voiture(V,2,horizontal,(X1,Yn,X2,Yn2))).
 
 bouger(V,Dir) :- 
-    Dir == d , 
-    voiture(V,3,horizontal,(X1,Y1,X2,Y2,X3,Y3)) ,
+    Dir==droite, 
+    voiture(V,3,horizontal,(X1,Y1,X2,Y2,X3,Y3)),
     \+bloquevoitureD(V) , 
     \+bloquemurD(V) , 
     Yn is Y1+1 , 
@@ -207,7 +212,7 @@ bouger(V,Dir) :-
     assert(voiture(V,3,horizontal,(X1,Yn,X2,Yn2,X3,Yn3))).
 
 bouger(V,Dir) :- 
-    Dir == g , 
+    Dir==gauche, 
     voiture(V,2,horizontal,(X1,Y1,X2,Y2)) , 
     \+bloquevoitureG(V) , 
     \+bloquemurG(V) , 
@@ -217,7 +222,7 @@ bouger(V,Dir) :-
     assert(voiture(V,2,horizontal,(X1,Yn,X2,Yn2))).
 
 bouger(V,Dir) :- 
-    Dir == g , 
+    Dir==gauche, 
     voiture(V,3,horizontal,(X1,Y1,X2,Y2,X3,Y3)) , 
     \+bloquevoitureG(V) , 
     \+bloquemurG(V) , 
@@ -228,7 +233,7 @@ bouger(V,Dir) :-
     assert(voiture(V,3,horizontal,(X1,Yn,X2,Yn2,X3,Yn3))).
 
 bouger(V,Dir) :- 
-    Dir == h , 
+    Dir==haut, 
     voiture(V,2,vertical,(X1,Y1,X2,Y2)) , 
     \+bloquevoitureH(V) , 
     \+bloquemurH(V) , 
@@ -238,7 +243,7 @@ bouger(V,Dir) :-
     assert(voiture(V,2,vertical,(Xn,Y1,Xn2,Y2))).
 
 bouger(V,Dir) :- 
-    Dir == h , 
+    Dir==haut, 
     voiture(V,3,vertical,(X1,Y1,X2,Y2,X3,Y3)) , 
     \+bloquevoitureH(V) , 
     \+bloquemurH(V), 
@@ -249,7 +254,7 @@ bouger(V,Dir) :-
     assert(voiture(V,3,vertical,(Xn,Y1,Xn2,Y2,Xn3,Y3))).
 
 bouger(V,Dir) :- 
-    Dir == b , 
+    Dir==bas, 
     voiture(V,2,vertical,(X1,Y1,X2,Y2)) , 
     \+bloquevoitureB(V) , 
     \+bloquemurB(V) , 
@@ -259,7 +264,7 @@ bouger(V,Dir) :-
     assert(voiture(V,2,vertical,(Xn,Y1,Xn2,Y2))).
 
 bouger(V,Dir) :- 
-    Dir == b , 
+    Dir==bas, 
     voiture(V,3,vertical,(X1,Y1,X2,Y2,X3,Y3)) , 
     \+bloquevoitureB(V) , 
     \+bloquemurB(V) , 
