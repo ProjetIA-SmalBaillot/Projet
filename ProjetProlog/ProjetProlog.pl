@@ -7,13 +7,8 @@
 % Etudiantes de deuxième année, promotion 2019 de l'ENSC
 
 %---------------------------------------
-% REGLES DU JEU ET OPERATEURS PERMANENTS
+% OPERATEURS PERMANENTS
 %---------------------------------------
-
-findujeu :- voiture(j,_,_,(_,_,3,6)),  %Lorsque le joueur a sa dernière composante sur la case 3,6 il a gagné
-    write('\e[2J'),
-    write("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\nFelicitations ! Vous avez gagne !!!\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n"),
-    demarrer().
 
 :- dynamic(voiture/4).        %définition dynamique des voitures car on va en enlever et en créer
 :- dynamic(compteurmvmt/1).
@@ -23,6 +18,10 @@ findujeu :- voiture(j,_,_,(_,_,3,6)),  %Lorsque le joueur a sa dernière composa
 %---------------
 %GESTION DU JEU
 %--------------
+findujeu :- voiture(j,_,_,(_,_,3,6)),  %Lorsque le joueur a sa dernière composante sur la case 3,6 il a gagné
+    write('\e[2J'),
+    write("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\nFelicitations ! Vous avez gagne !!!\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n"),
+    demarrer().
 
 demarrer():-
     retractall(voiture(_,_,_,_)),
@@ -41,7 +40,6 @@ tour(_,X,N) :-
     write("\n Votre score : " +Z),
     write("\n\nGrille de jeu\n"),
     affichageGrille(1),
-    repeat,
         repeat,
             write("\nSaisissez l'identifiant de la voiture a bouger (numeros sur la grille)"),
             read(Identifiant),
@@ -66,7 +64,7 @@ tour(_,X,N) :-
 % DEFINITION DES OBJETS
 %----------------------
 
-%les voitures verticales sont définies de h en b et les voitures horizontales de g à d
+%les voitures verticales sont définies de haut en bas et les voitures horizontales de gauche à droite
 %voiture (I,T,O,A) :- identifiant(I),taille(T),orientation(O), adresse(A).
 
 liste(direction,[droite,gauche,haut,bas]).
