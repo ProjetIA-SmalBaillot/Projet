@@ -15,10 +15,6 @@ findujeu :- voiture(j,_,_,(_,_,3,6)),  %Lorsque le joueur a sa dernière composa
     write("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\nFelicitations ! Vous avez gagne !!!\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n"),
     demarrer().
 
-%arretdejeu(X) :- 
-%    X==stop,
-%    demarrer().
-
 :- dynamic(voiture/4).        %définition dynamique des voitures car on va en enlever et en créer
 :- dynamic(compteurmvmt/1).
 :- dynamic(liste/2).
@@ -39,8 +35,9 @@ tour(stop,_,_) :- demarrer(),!.
 tour(_,X,N) :-
     compteurmvmt(Z),
     write('\e[2J'),
-    (X==true -> write("\nLe deplacement entre n'est pas autorise, recommencez\n"); true),
+    (X==true -> write("\nLe deplacement entre n'est pas autorise, recommencez:\n(Pour quitter le niveau, entrez 'stop.' lorsque l'identifiant de la voiture vous est demande)\n"); true),
     liste(N,L),
+    liste(direction,D),
     write("\n Votre score : " +Z),
     write("\n\nGrille de jeu\n"),
     affichageGrille(1),
@@ -56,7 +53,7 @@ tour(_,X,N) :-
         (repeat,
             write("Saisissez la direction du deplacement souhaite (haut,bas,gauche,droite)"),
             read(Direction),
-            ((Direction==droite ; Direction==gauche ; Direction==haut ; Direction==bas)->!
+            ((member(Direction, D))->!
             ; write("\nLa direction de deplacement saisie n'est pas valide, recommencez\n "), 
             fail
             ),
@@ -71,6 +68,8 @@ tour(_,X,N) :-
 
 %les voitures verticales sont définies de h en b et les voitures horizontales de g à d
 %voiture (I,T,O,A) :- identifiant(I),taille(T),orientation(O), adresse(A).
+
+liste(direction,[droite,gauche,haut,bas]).
 
 niveau(Commande) :- Commande == 0,
     assert(voiture(1,2,horizontal,(1,1,1,2))),
@@ -115,7 +114,7 @@ niveau(Commande) :- Commande == 3,
     assert(voiture(5,3,vertical,(4,6,5,6,6,6))),
     assert(voiture(j,2,horizontal,(3,2,3,3))),
     assert(compteurmvmt(0)),
-    assert(liste(1,[1,2,3,4,5,j,stop])),
+    assert(liste(3,[1,2,3,4,5,j,stop])),
     tour(a,false,3).
 
 niveau(Commande) :- Commande == 4,
@@ -127,7 +126,7 @@ niveau(Commande) :- Commande == 4,
     assert(voiture(6,3,horizontal,(6,3,6,4,6,5))),
     assert(voiture(j,2,horizontal,(3,2,3,3))),
     assert(compteurmvmt(0)),
-    assert(liste(1,[1,2,3,4,5,6,j,stop])),
+    assert(liste(4,[1,2,3,4,5,6,j,stop])),
     tour(a,false,4).
 
 %--------------------------
