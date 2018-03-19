@@ -21,35 +21,34 @@ findujeu :- voiture(j,_,_,(_,_,3,6)),  %Lorsque le joueur a sa dernière composa
 
 :- dynamic(voiture/4).        %définition dynamique des voitures car on va en enlever et en créer
 :- dynamic(compteurmvmt/1).
+:- dynamic(liste/2).
+:- dynamic(compteurmvmt/1).
 
 %---------------
 %GESTION DU JEU
 %--------------
 
 demarrer():-
-    write('\e[2J'),
     retractall(voiture(_,_,_,_)),
-    write("Bienvenue au demarrage du jeu Rush Hour ! \n\nREGLES DU JEU \nVotre voiture, marquee par la lettre j, est coincee dans les embouteillages. \nLe but est de l'en faire sortir en rejoignant la case dont le contenu est ecrit en rouge. \n\nPour cela, vous devez deplacer les voitures qui vous bloquent. \nLeur deplacement est permis en suivant les instructions a l'ecran.\nAjoutez un point '.' et appuyez sur entree pour valider chaque saisie \n\nIl vous est impossible de vous deplacer en dehors des limites de la grille, de taille 6*6. \nVous ne pouvez pas non plus vous deplacer sur une case deja occupee par une voiture. \nLes voitures de direction verticale ne peuvent se deplacer que vers le haut ou le bas. \nDe meme les voitures de direction horizontales ne peuvent se deplacer que vers la droite ou la gauche. \n\nPour commencer, choisissez le niveau de jeu en ecrivant 'niveau(X).' avec X le niveau choisi entre 1,2, 3 ou 4.").
+    retractall(compteurmvmt(_)),
+    write("Bienvenue au demarrage du jeu Rush Hour ! \n\nREGLES DU JEU \nVotre voiture, marquee par la lettre j, est coincee dans les embouteillages. \nLe but est de l'en faire sortir en rejoignant la case dont le contenu est ecrit en rouge. \n\nPour cela, vous devez deplacer les voitures qui vous bloquent. \nLeur deplacement est permis en suivant les instructions a l'ecran.\nAjoutez un point '.' et appuyez sur entree pour valider chaque saisie \n\nIl vous est impossible de vous deplacer en dehors des limites de la grille, de taille 6*6. \nVous ne pouvez pas non plus vous deplacer sur une case deja occupee par une voiture. \nLes voitures de direction verticale ne peuvent se deplacer que vers le haut ou le bas. \nDe meme les voitures de direction horizontales ne peuvent se deplacer que vers la droite ou la gauche. \n\nPour commencer, choisissez le niveau de jeu en ecrivant 'niveau(X).' avec X le niveau choisi entre 1,2, 3 ou 4.\nPour quitter le niveau, entrez 'stop.' lorsque l'identifiant de la voiture vous est demande.").
 
-compteurmvmt(-1).
+tour(_,_,_) :- findujeu,!.
+tour(stop,_,_) :- demarrer(),!.
 
-tour() :- tour(a).
-tour(_) :-   
-        findujeu,!.
-tour(stop) :- demarrer(),!.
-tour(_) :-
-    retract(compteurmvmt(X)),
-    Y is X+1,
-    assert(compteurmvmt(Y)),
+tour(_,X,N) :-
+    compteurmvmt(Z),
     write('\e[2J'),
-    write("\n Votre score : " +Y),
+    (X==true -> write("\nLe deplacement entre n'est pas autorise, recommencez\n"); true),
+    liste(N,L),
+    write("\n Votre score : " +Z),
     write("\n\nGrille de jeu\n"),
     affichageGrille(1),
     repeat,
-        (repeat,
+        repeat,
             write("\nSaisissez l'identifiant de la voiture a bouger (numeros sur la grille)"),
             read(Identifiant),
-            ((Identifiant==stop; Identifiant==j; Identifiant==1; Identifiant==2 ; Identifiant==3 ; Identifiant==4 ; Identifiant==5 ; Identifiant==6 ; Identifiant==7 ; Identifiant==8 ; Identifiant==9 ; Identifiant==a)->!
+            ((member(Identifiant, L))->!
             ; write("\nL'identifiant entre n'est pas valide, recommencez "), 
             fail
             ),  
@@ -58,13 +57,13 @@ tour(_) :-
             write("Saisissez la direction du deplacement souhaite (haut,bas,gauche,droite)"),
             read(Direction),
             ((Direction==droite ; Direction==gauche ; Direction==haut ; Direction==bas)->!
-            ; write("\nLa direction de deplacement saisie n'est pas valide, recommencez "), 
+            ; write("\nLa direction de deplacement saisie n'est pas valide, recommencez\n "), 
             fail
             ),
-        bouger(Identifiant,Direction)->!
-; write("\nLe deplacement entre n'est pas autorise, recommencez"));(true)
-)),
-    tour(Identifiant).
+        (bouger(Identifiant,Direction)->retract(compteurmvmt(Z)), Y is Z+1, assert(compteurmvmt(Y)),!
+        ;Erreur=true))
+        ;true),
+    tour(Identifiant,Erreur,N).
 
 %----------------------
 % DEFINITION DES OBJETS
@@ -77,7 +76,7 @@ niveau(Commande) :- Commande == 0,
     assert(voiture(1,2,horizontal,(1,1,1,2))),
     assert(voiture(j,2,horizontal,(3,2,3,3))),
     affichageGrille(1),
-    tour().
+    tour(a,false,0).
 
 niveau(Commande) :- Commande == 1,
     assert(voiture(1,2,horizontal,(1,1,1,2))),
@@ -88,7 +87,9 @@ niveau(Commande) :- Commande == 1,
     assert(voiture(6,2,horizontal,(5,5,5,6))),
     assert(voiture(7,3,horizontal,(6,3,6,4,6,5))),
     assert(voiture(j,2,horizontal,(3,2,3,3))),
-    tour().
+    assert(liste(1,[1,2,3,4,5,6,7,j,stop])),
+    assert(compteurmvmt(0)),
+    tour(a,false,1).
 
 niveau(Commande) :- Commande == 2,
     assert(voiture(1,2,vertical,(1,1,2,1))),
@@ -102,7 +103,9 @@ niveau(Commande) :- Commande == 2,
     assert(voiture(9,2,vertical,(2,4,3,4))),
     assert(voiture(a,3,horizontal,(1,4,1,5,1,6))),
     assert(voiture(j,2,horizontal,(3,1,3,2))),
-    tour().
+    assert(liste(2,[1,2,3,4,5,6,7,8,9,a,j,stop])),
+    assert(compteurmvmt(0)),
+    tour(a,false,2).
 
 niveau(Commande) :- Commande == 3,
     assert(voiture(1,2,horizontal,(4,2,4,3))),
@@ -111,7 +114,9 @@ niveau(Commande) :- Commande == 3,
     assert(voiture(4,3,vertical,(3,4,4,4,5,4))),
     assert(voiture(5,3,vertical,(4,6,5,6,6,6))),
     assert(voiture(j,2,horizontal,(3,2,3,3))),
-    tour().
+    assert(compteurmvmt(0)),
+    assert(liste(1,[1,2,3,4,5,j,stop])),
+    tour(a,false,3).
 
 niveau(Commande) :- Commande == 4,
     assert(voiture(1,3,vertical,(1,1,2,1,3,1))),
@@ -121,7 +126,9 @@ niveau(Commande) :- Commande == 4,
     assert(voiture(5,2,vertical,(5,6,6,6))),
     assert(voiture(6,3,horizontal,(6,3,6,4,6,5))),
     assert(voiture(j,2,horizontal,(3,2,3,3))),
-    tour().
+    assert(compteurmvmt(0)),
+    assert(liste(1,[1,2,3,4,5,6,j,stop])),
+    tour(a,false,4).
 
 %--------------------------
 %CASE PRISE PAR UNE VOITURE
